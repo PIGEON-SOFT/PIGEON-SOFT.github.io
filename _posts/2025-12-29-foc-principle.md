@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "FOC 矢量控制学习笔记：原理与 STM32 实现尝试"
+title:      "FOC 矢量控制学习笔记："
 subtitle:   "记录一下 FOC 的学习与代码实现过程"
 date:       2025-12-29
 author:     "Pigeon"
