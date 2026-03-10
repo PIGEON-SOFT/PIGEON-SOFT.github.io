@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SC8815 云端实时监控</title>
+    <!-- MQTT.js CDN -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #e2e8f0; min-height: 100vh; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+
+        .header { text-align: center; padding: 25px 0; }
+        .header h1 { font-size: 24px; color: #38bdf8; margin-bottom: 8px; }
+        .header p { color: #94a3b8; font-size: 14px; }
+
+        /* 连接状态栏 */
+        .conn-bar { display: flex; justify-content: space-between; align-items: center; background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 12px 20px; margin-bottom: 25px; }
+        .conn-info { display: flex; align-items: center; gap: 10px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: #ef4444; display: inline-block; }
+        .dot.on { background: #22c55e; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .conn-text { font-size: 14px; }
+        .msg-badge { background: #334155; padding: 5px 12px; border-radius: 15px; font-size: 13px; color: #94a3b8; }
+
+        /* 数据卡片 */
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; }
+        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; position: relative; overflow: hidden; }
+        .card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+        .card:nth-child(1)::before { background: #3b82f6; }
+        .card:nth-child(2)::before { background: #22c55e; }
+        .card:nth-child(3)::before { background: #f59e0b; }
+        .card:nth-child(4)::before { background: #ef4444; }
+
+        .card-label { font-size: 13px; color: #94a3b8; margin-bottom: 8px; letter-spacing: 0.5px; }
+        .card-value { font-size: 36px; font-weight: 700; }
+        .card:nth-child(1) .card-value { color: #3b82f6; }
+        .card:nth-child(2) .card-value { color: #22c55e; }
+        .card:nth-child(3) .card-value { color: #f59e0b; }
+        .card:nth-child(4) .card-value { color: #ef4444; }
+        .card-unit { font-size: 16px; font-weight: 400; opacity: 0.6; }
+        .card-sub { font-size: 12px; color: #64748b; margin-top: 5px; }
+
+        /* 日志区域 */
+        .log-box { background: #0f172a; border: 1px solid #334155; border-radius: 12px; overflow: hidden; }
+        .log-header { background: #1e293b; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
+        .log-header span { font-size: 14px; color: #94a3b8; }
+        .log-header button { background: #334155; color: #94a3b8; border: none; padding: 5px 12px; border-radius: 5px; cursor: pointer; font-size: 12px; }
+        .log-header button:hover { background: #475569; color: #e2e8f0; }
+        .log-content { height: 280px; overflow-y: auto; padding: 12px 18px; font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.8; }
+        .log-content::-webkit-scrollbar { width: 6px; }
+        .log-content::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        .log-line { border-bottom: 1px solid rgba(255,255,255,0.03); padding: 2px 0; }
+        .log-time { color: #64748b; }
+        .log-data { color: #4ade80; }
+        .log-sys { color: #fbbf24; }
+
+        /* 配置区 */
+        .config { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 15px 20px; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .config label { font-size: 13px; color: #94a3b8; }
+        .config input { background: #0f172a; border: 1px solid #334155; color: #e2e8f0; padding: 8px 12px; border-radius: 6px; font-size: 13px; width: 220px; }
+        .config button { background: #3b82f6; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        .config button:hover { background: #2563eb; }
+
+        .footer { text-align: center; padding: 20px 0; color: #475569; font-size: 12px; }
+
+        /* MCU 状态面板 */
+        .status-panel { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 18px 22px; margin-bottom: 25px; }
+        .status-panel h3 { font-size: 15px; color: #94a3b8; margin-bottom: 12px; }
+        .status-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        @media (max-width: 600px) { .status-grid { grid-template-columns: repeat(2, 1fr); } }
+        .status-item { text-align: center; }
+        .status-item .label { font-size: 11px; color: #64748b; margin-bottom: 4px; }
+        .status-item .val { font-size: 15px; font-weight: 600; color: #cbd5e1; }
+        .status-item .val.ok { color: #22c55e; }
+        .status-item .val.warn { color: #f59e0b; }
+        .status-item .val.err { color: #ef4444; }
+
+        /* 图表区域 */
+        .chart-section { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; margin-bottom: 25px; }
+        .chart-section h3 { font-size: 15px; color: #94a3b8; margin-bottom: 15px; }
+        .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 700px) { .chart-row { grid-template-columns: 1fr; } }
+        .chart-wrap { position: relative; height: 220px; background: #0f172a; border-radius: 8px; padding: 10px; }
+
+        /* 控制面板 */
+        .ctrl-panel { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; margin-bottom: 25px; }
+        .ctrl-panel h3 { font-size: 15px; color: #94a3b8; margin-bottom: 15px; }
+        .ctrl-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 18px; }
+        @media (max-width: 600px) { .ctrl-grid { grid-template-columns: 1fr; } }
+        .ctrl-item { display: flex; align-items: center; gap: 10px; }
+        .ctrl-item label { font-size: 13px; color: #94a3b8; min-width: 100px; }
+        .ctrl-item input[type="number"] { background: #0f172a; border: 1px solid #334155; color: #e2e8f0; padding: 8px 12px; border-radius: 6px; font-size: 14px; width: 120px; }
+        .ctrl-item input[type="number"]:focus { border-color: #3b82f6; outline: none; }
+        .ctrl-item .unit { font-size: 12px; color: #64748b; }
+        .ctrl-btns { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 5px; }
+        .ctrl-btns button { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        .btn-send { background: #3b82f6; color: #fff; }
+        .btn-send:hover { background: #2563eb; }
+        .btn-start { background: #22c55e; color: #fff; }
+        .btn-start:hover { background: #16a34a; }
+        .btn-stop { background: #ef4444; color: #fff; }
+        .btn-stop:hover { background: #dc2626; }
+        .btn-mode { background: #8b5cf6; color: #fff; }
+        .btn-mode:hover { background: #7c3aed; }
+        .ctrl-feedback { margin-top: 12px; padding: 8px 14px; background: #0f172a; border-radius: 6px; font-size: 12px; color: #64748b; font-family: monospace; min-height: 30px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>⚡ SC8815 Buck-Boost 云端监控</h1>
+        <p>通过 EMQX 公共 MQTT 服务器实时接收单片机数据 · 无需后台服务</p>
+    </div>
+
+    <!-- 配置栏 -->
+    <div class="config">
+        <label>MQTT 主题:</label>
+        <input type="text" id="topic" value="ht32_sc8815/data">
+        <button onclick="reconnect()">重新连接</button>
+    </div>
+
+    <!-- 连接状态 -->
+    <div class="conn-bar">
+        <div class="conn-info">
+            <span class="dot" id="dot"></span>
+            <span class="conn-text" id="conn-text">正在连接 broker.emqx.io ...</span>
+        </div>
+        <span class="msg-badge" id="badge">消息: 0 | 最后更新: --</span>
+    </div>
+
+    <!-- MCU 状态面板 -->
+    <div class="status-panel">
+        <h3>🔧 单片机状态</h3>
+        <div class="status-grid">
+            <div class="status-item">
+                <div class="label">MQTT 连接</div>
+                <div class="val" id="st-mqtt">等待中</div>
+            </div>
+            <div class="status-item">
+                <div class="label">数据频率</div>
+                <div class="val" id="st-freq">-- Hz</div>
+            </div>
+            <div class="status-item">
+                <div class="label">运行时长</div>
+                <div class="val" id="st-uptime">--</div>
+            </div>
+            <div class="status-item">
+                <div class="label">数据状态</div>
+                <div class="val" id="st-data">无数据</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据面板 -->
+    <div class="grid">
+        <div class="card">
+            <div class="card-label">VBUS 电压 (输入端)</div>
+            <div class="card-value"><span id="v-vbus">--</span> <span class="card-unit">mV</span></div>
+            <div class="card-sub" id="s-vbus">等待数据...</div>
+        </div>
+        <div class="card">
+            <div class="card-label">VBUS 电流 (输入端)</div>
+            <div class="card-value"><span id="v-ibus">--</span> <span class="card-unit">mA</span></div>
+            <div class="card-sub" id="s-ibus">等待数据...</div>
+        </div>
+        <div class="card">
+            <div class="card-label">电池电压 (BATT)</div>
+            <div class="card-value"><span id="v-vbat">--</span> <span class="card-unit">mV</span></div>
+            <div class="card-sub" id="s-vbat">等待数据...</div>
+        </div>
+        <div class="card">
+            <div class="card-label">电池电流 (BATT)</div>
+            <div class="card-value"><span id="v-ibat">--</span> <span class="card-unit">mA</span></div>
+            <div class="card-sub" id="s-ibat">等待数据...</div>
+        </div>
+    </div>
+
+    <!-- 实时折线图 -->
+    <div class="chart-section">
+        <h3>📈 实时趋势图</h3>
+        <div class="chart-row">
+            <div class="chart-wrap"><canvas id="chart-voltage"></canvas></div>
+            <div class="chart-wrap"><canvas id="chart-current"></canvas></div>
+        </div>
+    </div>
+
+    <!-- 远程控制面板 -->
+    <div class="ctrl-panel">
+        <h3>🎮 远程控制 (发送到 ht32_sc8815/cmd)</h3>
+        <div class="ctrl-grid">
+            <div class="ctrl-item">
+                <label>VBus 电压</label>
+                <input type="number" id="ctrl-vbus-v" value="12.0" step="0.1" min="3" max="36">
+                <span class="unit">V</span>
+            </div>
+            <div class="ctrl-item">
+                <label>VBus 电流</label>
+                <input type="number" id="ctrl-vbus-i" value="2.0" step="0.1" min="0.3" max="12">
+                <span class="unit">A</span>
+            </div>
+            <div class="ctrl-item">
+                <label>电池节数</label>
+                <input type="number" id="ctrl-batt-s" value="4" step="1" min="1" max="8">
+                <span class="unit">S</span>
+            </div>
+            <div class="ctrl-item">
+                <label>电池电流</label>
+                <input type="number" id="ctrl-batt-i" value="2.0" step="0.1" min="0.3" max="12">
+                <span class="unit">A</span>
+            </div>
+        </div>
+        <div class="ctrl-btns">
+            <button class="btn-send" onclick="sendParams()">📤 发送参数</button>
+            <button class="btn-mode" onclick="sendMode(0)">🔋 充电模式</button>
+            <button class="btn-mode" onclick="sendMode(1)">⚡ 放电模式</button>
+            <button class="btn-start" onclick="sendEnable(1)">▶ 启动</button>
+            <button class="btn-stop" onclick="sendEnable(0)">⏹ 停止</button>
+        </div>
+        <div class="ctrl-feedback" id="ctrl-fb">等待操作...</div>
+    </div>
+
+    <!-- 日志 -->
+    <div class="log-box">
+        <div class="log-header">
+            <span>📡 实时数据流</span>
+            <button onclick="clearLog()">清空</button>
+        </div>
+        <div class="log-content" id="log"></div>
+    </div>
+
+    <div class="footer">
+        MQTT Broker: broker.emqx.io:8083 (WebSocket) · 主题: ht32_sc8815/data · 纯前端，无需后台
+    </div>
+</div>
+
+<script>
+    const logEl = document.getElementById('log');
+    const dotEl = document.getElementById('dot');
+    const connEl = document.getElementById('conn-text');
+    const badgeEl = document.getElementById('badge');
+    let client = null;
+    let msgCount = 0;
+    let lastValues = {};
+
+    // ====== 图表初始化 ======
+    const MAX_POINTS = 60;
+    const chartLabels = [];
+    const historyData = { Vbus_V: [], Vbus_I: [], Batt_V: [], Batt_I: [] };
+
+    function makeChartConfig(label1, color1, data1, label2, color2, data2, yLabel) {
+        return {
+            type: 'line',
+            data: {
+                labels: chartLabels,
+                datasets: [
+                    { label: label1, data: data1, borderColor: color1, backgroundColor: color1 + '20', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: true },
+                    { label: label2, data: data2, borderColor: color2, backgroundColor: color2 + '20', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: true },
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, animation: { duration: 0 },
+                scales: {
+                    x: { display: true, ticks: { color: '#64748b', maxTicksLimit: 6, font: { size: 10 } }, grid: { color: '#1e293b' } },
+                    y: { display: true, ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: '#1e293b33' }, title: { display: true, text: yLabel, color: '#64748b', font: { size: 11 } } }
+                },
+                plugins: { legend: { labels: { color: '#94a3b8', boxWidth: 12, font: { size: 11 } } } }
+            }
+        };
+    }
+
+    const voltageChart = new Chart(document.getElementById('chart-voltage'), makeChartConfig('VBus(mV)', '#3b82f6', historyData.Vbus_V, 'Batt(mV)', '#f59e0b', historyData.Batt_V, 'mV'));
+    const currentChart = new Chart(document.getElementById('chart-current'), makeChartConfig('VBus(mA)', '#22c55e', historyData.Vbus_I, 'Batt(mA)', '#ef4444', historyData.Batt_I, 'mA'));
+
+    function pushChartData(d) {
+        const now = new Date().toLocaleTimeString([], { hour12: false });
+        chartLabels.push(now);
+        historyData.Vbus_V.push(d.Vbus_V || null);
+        historyData.Vbus_I.push(d.Vbus_I || null);
+        historyData.Batt_V.push(d.Batt_V || null);
+        historyData.Batt_I.push(d.Batt_I || null);
+        if (chartLabels.length > MAX_POINTS) {
+            chartLabels.shift();
+            historyData.Vbus_V.shift(); historyData.Vbus_I.shift();
+            historyData.Batt_V.shift(); historyData.Batt_I.shift();
+        }
+        voltageChart.update();
+        currentChart.update();
+    }
+
+    // ====== MCU 状态追踪 ======
+    let firstMsgTime = null;
+    let recentTimestamps = [];
+
+    function updateStatus() {
+        const stMqtt = document.getElementById('st-mqtt');
+        const stFreq = document.getElementById('st-freq');
+        const stUptime = document.getElementById('st-uptime');
+        const stData = document.getElementById('st-data');
+
+        // MQTT 连接状态
+        if (client && client.connected) { stMqtt.innerText = '已连接'; stMqtt.className = 'val ok'; }
+        else { stMqtt.innerText = '已断开'; stMqtt.className = 'val err'; }
+
+        // 数据频率 (最近10秒内消息数)
+        const now = Date.now();
+        recentTimestamps = recentTimestamps.filter(t => now - t < 10000);
+        const freq = recentTimestamps.length / 10;
+        stFreq.innerText = freq.toFixed(1) + ' Hz';
+        stFreq.className = freq > 0 ? 'val ok' : 'val warn';
+
+        // 运行时长
+        if (firstMsgTime) {
+            const sec = Math.floor((now - firstMsgTime) / 1000);
+            const h = Math.floor(sec / 3600); const m = Math.floor((sec % 3600) / 60); const s = sec % 60;
+            stUptime.innerText = `${h}h ${m}m ${s}s`;
+            stUptime.className = 'val ok';
+        }
+
+        // 数据状态
+        const lastTs = recentTimestamps[recentTimestamps.length - 1];
+        if (!lastTs) { stData.innerText = '无数据'; stData.className = 'val warn'; }
+        else if (now - lastTs < 5000) { stData.innerText = '正常接收'; stData.className = 'val ok'; }
+        else { stData.innerText = '超时 ' + Math.floor((now - lastTs) / 1000) + 's'; stData.className = 'val err'; }
+    }
+    setInterval(updateStatus, 1000);
+
+    // ====== 通用工具 ======
+    function ts() { return new Date().toLocaleTimeString([], { hour12: false }); }
+
+    function addLog(text, type) {
+        const div = document.createElement('div');
+        div.className = 'log-line';
+        const cls = type === 'sys' ? 'log-sys' : 'log-data';
+        div.innerHTML = `<span class="log-time">[${ts()}]</span> <span class="${cls}">${text}</span>`;
+        logEl.appendChild(div);
+        logEl.scrollTop = logEl.scrollHeight;
+        if (logEl.childElementCount > 300) logEl.removeChild(logEl.firstChild);
+    }
+
+    function clearLog() { logEl.innerHTML = ''; msgCount = 0; badgeEl.innerText = '消息: 0 | 最后更新: --'; addLog('日志已清空', 'sys'); }
+
+    function updateCard(id, value, subId) {
+        const el = document.getElementById(id);
+        const sub = document.getElementById(subId);
+        const old = lastValues[id];
+        el.innerText = value;
+        if (old !== undefined) {
+            const diff = value - old;
+            sub.innerText = diff > 0 ? `▲ +${diff}` : diff < 0 ? `▼ ${diff}` : '— 无变化';
+        } else {
+            sub.innerText = `已更新 ${ts()}`;
+        }
+        lastValues[id] = value;
+    }
+
+    // ====== MQTT 连接 ======
+    function connectMqtt() {
+        const topic = document.getElementById('topic').value;
+        const brokerUrl = 'wss://broker.emqx.io:8084/mqtt';
+
+        addLog(`正在连接 EMQX 公共服务器...`, 'sys');
+        connEl.innerText = '正在连接 broker.emqx.io ...';
+
+        if (client) { client.end(true); }
+
+        client = mqtt.connect(brokerUrl, {
+            clientId: 'web_' + Math.random().toString(16).substring(2, 8),
+            clean: true,
+            connectTimeout: 10000,
+            reconnectPeriod: 5000,
+        });
+
+        client.on('connect', function () {
+            dotEl.className = 'dot on';
+            connEl.innerText = '已连接 broker.emqx.io (公共云)';
+            addLog('✓ MQTT 连接成功！已订阅主题: ' + topic, 'sys');
+            client.subscribe(topic, { qos: 0 });
+        });
+
+        client.on('message', function (t, payload) {
+            msgCount++;
+            const raw = payload.toString();
+            badgeEl.innerText = `消息: ${msgCount} | 最后更新: ${ts()}`;
+            addLog(raw, 'data');
+
+            recentTimestamps.push(Date.now());
+            if (!firstMsgTime) firstMsgTime = Date.now();
+
+            try {
+                const d = JSON.parse(raw);
+                if (d.Vbus_V !== undefined) updateCard('v-vbus', d.Vbus_V, 's-vbus');
+                if (d.Vbus_I !== undefined) updateCard('v-ibus', d.Vbus_I, 's-ibus');
+                if (d.Batt_V !== undefined) updateCard('v-vbat', d.Batt_V, 's-vbat');
+                if (d.Batt_I !== undefined) updateCard('v-ibat', d.Batt_I, 's-ibat');
+                pushChartData(d);
+            } catch (e) {
+                // 非 JSON 格式，仅记录日志
+            }
+        });
+
+        client.on('error', function (err) {
+            addLog('连接错误: ' + err.message, 'sys');
+        });
+
+        client.on('close', function () {
+            dotEl.className = 'dot';
+            connEl.innerText = '已断开，等待重连...';
+            addLog('连接已断开，将自动重连...', 'sys');
+        });
+
+        client.on('reconnect', function () {
+            addLog('正在尝试重新连接...', 'sys');
+        });
+    }
+
+    function reconnect() {
+        connectMqtt();
+    }
+
+    // ====== 远程控制 ======
+    const CMD_TOPIC = 'ht32_sc8815/cmd';
+    const feedbackEl = document.getElementById('ctrl-fb');
+
+    function publishCmd(payload) {
+        if (!client || !client.connected) {
+            feedbackEl.innerText = '❌ MQTT 未连接，无法发送！';
+            feedbackEl.style.color = '#ef4444';
+            return;
+        }
+        // MCU 解析器要求 JSON 值为字符串格式 "key":"value"
+        const strPayload = {};
+        for (const k in payload) { strPayload[k] = String(payload[k]); }
+        const json = JSON.stringify(strPayload);
+        client.publish(CMD_TOPIC, json, { qos: 1 });
+        feedbackEl.innerText = `✅ [${ts()}] 已发送: ${json}`;
+        feedbackEl.style.color = '#22c55e';
+        addLog(`📤 已发送控制指令: ${json}`, 'sys');
+    }
+
+    function sendParams() {
+        const vbusV = parseFloat(document.getElementById('ctrl-vbus-v').value);
+        const vbusI = parseFloat(document.getElementById('ctrl-vbus-i').value);
+        const battS = parseInt(document.getElementById('ctrl-batt-s').value);
+        const battI = parseFloat(document.getElementById('ctrl-batt-i').value);
+        publishCmd({ VbusSet_V: vbusV, VbusSet_I: vbusI, BattSet_V: battS, BattSet_I: battI });
+    }
+
+    function sendMode(mode) {
+        // mode: 0=充电, 1=放电  (MCU 端 WorkPatter 经过 /1000-1, 所以发 1=充电, 2=放电)
+        publishCmd({ WorkPatter: mode + 1 });
+    }
+
+    function sendEnable(en) {
+        // en: 0=停止, 1=启动  (MCU 端 DriverEn 经过 /1000-1, 所以发 1=停止, 2=启动)
+        publishCmd({ DriverEn: en + 1 });
+    }
+
+    // 页面加载自动连接
+    window.onload = connectMqtt;
+</script>
+
+</body>
+</html>
