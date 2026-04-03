@@ -109,6 +109,43 @@
         .btn-mode { background: #8b5cf6; color: #fff; }
         .btn-mode:hover { background: #7c3aed; }
         .ctrl-feedback { margin-top: 12px; padding: 8px 14px; background: #0f172a; border-radius: 6px; font-size: 12px; color: #64748b; font-family: monospace; min-height: 30px; }
+
+        /* 支付成功弹窗 */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.62);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            width: min(520px, 92vw);
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 18px 22px;
+            box-shadow: 0 18px 60px rgba(0,0,0,0.45);
+        }
+        .modal h2 {
+            color: #22c55e;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+        .modal .modal-body { color: #e2e8f0; font-size: 14px; line-height: 1.6; margin-bottom: 16px; }
+        .modal .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+        .btn-close {
+            background: #334155;
+            color: #e2e8f0;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-close:hover { background: #475569; }
     </style>
 </head>
 <body>
@@ -240,6 +277,17 @@
     </div>
 </div>
 
+<!-- 支付成功弹窗 -->
+<div id="paySuccessModal" class="modal-overlay">
+    <div class="modal" role="dialog" aria-modal="true">
+        <h2>支付成功</h2>
+        <div class="modal-body" id="paySuccessText">正在确认设备运行状态...</div>
+        <div class="modal-actions">
+            <button class="btn-close" onclick="hidePaySuccessModal()">关闭</button>
+        </div>
+    </div>
+</div>
+
 <script>
     const logEl = document.getElementById('log');
     const dotEl = document.getElementById('dot');
@@ -248,6 +296,51 @@
     let client = null;
     let msgCount = 0;
     let lastValues = {};
+
+    // ====== 支付成功弹窗 ======
+    const paySuccessModalEl = document.getElementById('paySuccessModal');
+    const paySuccessTextEl = document.getElementById('paySuccessText');
+    let lastPaySuccessTs = 0;
+
+    function showPaySuccessModal(text, autoHideMs) {
+        if (!paySuccessModalEl || !paySuccessTextEl) return;
+        paySuccessTextEl.innerText = text || '支付成功！';
+        paySuccessModalEl.classList.add('show');
+        if (autoHideMs) {
+            setTimeout(() => {
+                hidePaySuccessModal();
+            }, autoHideMs);
+        }
+    }
+
+    function hidePaySuccessModal() {
+        if (!paySuccessModalEl) return;
+        paySuccessModalEl.classList.remove('show');
+    }
+
+    // 根据 MQTT JSON 中的字段判断“手动确认支付成功”
+    // MCU 需要在 topic payload 里发送类似 { "PaySuccess": 1 }。
+    function maybeShowPaySuccessModal(d) {
+        if (!d) return;
+        const now = Date.now();
+        if (now - lastPaySuccessTs < 8000) return; // 8s 内避免重复弹窗
+
+        const candidates = [
+            ['PaySuccess', '支付成功'],
+            ['PayOK', '支付成功'],
+            ['PayOk', '支付成功'],
+            ['PaySuccessed', '支付成功'],
+        ];
+        for (const [key, msg] of candidates) {
+            if (d[key] === undefined) continue;
+            const v = Number(d[key]);
+            if (v === 1) {
+                lastPaySuccessTs = now;
+                showPaySuccessModal(msg, 10000);
+                return;
+            }
+        }
+    }
 
     // ====== 图表初始化 ======
     const MAX_POINTS = 60;
@@ -400,6 +493,7 @@
                 if (d.Batt_V !== undefined) updateCard('v-vbat', d.Batt_V, 's-vbat');
                 if (d.Batt_I !== undefined) updateCard('v-ibat', d.Batt_I, 's-ibat');
                 pushChartData(d);
+                maybeShowPaySuccessModal(d);
             } catch (e) {
                 // 非 JSON 格式，仅记录日志
             }
