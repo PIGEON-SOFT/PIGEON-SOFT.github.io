@@ -1,47 +1,78 @@
 ---
-layout: page
-description: "「 代码驱动硬件，技术改变生活 」"
-header-mask: 0.4
+layout: home
+description: "记录嵌入式系统、控制、电源与不断发生的实验。"
 ---
 
-{% for post in paginator.posts %}
-<div class="post-preview">
-    <a href="{{ post.url | prepend: site.baseurl }}">
-        <h2 class="post-title">
-            {{ post.title }}
-        </h2>
-        {% if post.subtitle %}
-        <h3 class="post-subtitle">
-            {{ post.subtitle }}
-        </h3>
-        {% endif %}
-        <div class="post-content-preview">
-            {% if post.lang == 'en' %}
-                {{ post.content | strip_html | truncate:300 }}
-            {% else %}
-                {{ post.content | strip_html | truncate:200 }}
-            {% endif %}
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by {% if post.author %}{{ post.author }}{% else %}{{ site.title }}{% endif %} on {{ post.date | date: "%B %-d, %Y" }}
-    </p>
-</div>
-<hr>
-{% endfor %}
+<section class="signal-hero" id="top" aria-labelledby="hero-title">
+  <div class="signal-hero-image" aria-hidden="true"></div>
+  <div class="signal-hero-shade" aria-hidden="true"></div>
+  <div class="signal-hero-grid" aria-hidden="true"></div>
+  <div class="signal-scan" aria-hidden="true"></div>
+  <div class="signal-hero-inner">
+    <div class="signal-coordinate" aria-hidden="true"><span class="signal-pulse"></span> TRANSMISSION / 001 <span class="signal-coordinate-line"></span> ONLINE</div>
+    <div class="signal-hero-copy">
+      <p class="signal-overline">PERSONAL ENGINEERING LOG <span>— EST. 2025</span></p>
+      <h1 id="hero-title">PIGEON<span class="signal-title-period">.</span><span class="signal-title-outline" aria-hidden="true">PIGEON</span></h1>
+      <p class="signal-hero-subtitle">把想法接入现实<span class="signal-subtitle-cursor" aria-hidden="true"></span></p>
+      <p class="signal-hero-description">关于嵌入式、控制与电源的实验记录。<br>从原理出发，沿着代码和电路继续探索。</p>
+      <div class="signal-hero-actions">
+        <a class="signal-primary-link" href="#latest"><span>查看最新记录</span><span class="signal-link-arrow" aria-hidden="true">↘</span></a>
+        <a class="signal-secondary-link" href="{{ site.baseurl }}/about/">认识我 <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+    <div class="signal-hero-side" aria-hidden="true"><span>ENGINEERING / NOTES</span><span>01 — 06</span></div>
+    <div class="signal-hero-bottom">
+      <div class="signal-discipline"><span>01 / EMBEDDED</span><span>02 / CONTROL</span><span>03 / POWER</span></div>
+      <button class="signal-motion-toggle" type="button" aria-pressed="false">暂停动画 <span aria-hidden="true">Ⅱ</span></button>
+    </div>
+  </div>
+</section>
 
-<!-- Pager -->
-{% if paginator.total_pages > 1 %}
-<ul class="pager">
-    {% if paginator.previous_page %}
-    <li class="previous">
-        <a href="{{ paginator.previous_page_path | prepend: site.baseurl | replace: '//', '/' }}">&larr; Newer Posts</a>
-    </li>
+<section class="signal-intro" aria-label="站点简介">
+  <div class="signal-intro-inner">
+    <span class="signal-section-index">[ 00 / PROFILE ]</span>
+    <p>在<strong>硬件</strong>与<strong>代码</strong>之间，记录每一次思考、试验和迭代。</p>
+    <a href="{{ site.baseurl }}/about/" aria-label="阅读关于我的介绍">ABOUT ME <span aria-hidden="true">↗</span></a>
+  </div>
+</section>
+
+<section class="signal-journal" id="latest" aria-labelledby="journal-title">
+  <div class="signal-journal-inner">
+    <div class="signal-section-heading" data-reveal>
+      <div>
+        <p class="signal-section-index">[ 01 / ARCHIVE ] &nbsp; FIELD NOTES</p>
+        <h2 id="journal-title">最新记录<span class="signal-heading-period">.</span></h2>
+      </div>
+      <a class="signal-all-link" href="{{ site.baseurl }}/archive/">浏览全部文章 <span aria-hidden="true">↗</span></a>
+    </div>
+
+    <div class="signal-posts">
+      {% for post in paginator.posts %}
+      <article class="signal-post" data-reveal>
+        <a href="{{ post.url | prepend: site.baseurl }}" class="signal-post-link">
+          <span class="signal-post-number">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>
+          <span class="signal-post-main">
+            <span class="signal-post-tags">{% for tag in post.tags limit:2 %}{{ tag }}{% unless forloop.last %} / {% endunless %}{% endfor %}</span>
+            <span class="signal-post-title">{{ post.title }}</span>
+            {% if post.subtitle %}<span class="signal-post-subtitle">{{ post.subtitle }}</span>{% endif %}
+          </span>
+          <time datetime="{{ post.date | date: '%Y-%m-%d' }}">{{ post.date | date: '%Y.%m.%d' }}</time>
+          <span class="signal-post-arrow" aria-hidden="true">↗</span>
+        </a>
+      </article>
+      {% endfor %}
+    </div>
+
+    {% if paginator.total_pages > 1 %}
+    <nav class="signal-pagination" aria-label="文章分页">
+      {% if paginator.previous_page %}
+      <a href="{{ paginator.previous_page_path | prepend: site.baseurl | replace: '//', '/' }}">← 更新的文章</a>
+      {% else %}<span></span>{% endif %}
+      <span>{{ paginator.page }} / {{ paginator.total_pages }}</span>
+      {% if paginator.next_page %}
+      <a href="{{ paginator.next_page_path | prepend: site.baseurl | replace: '//', '/' }}">更早的文章 →</a>
+      {% else %}<span></span>{% endif %}
+    </nav>
     {% endif %}
-    {% if paginator.next_page %}
-    <li class="next">
-        <a href="{{ paginator.next_page_path | prepend: site.baseurl | replace: '//', '/' }}">Older Posts &rarr;</a>
-    </li>
-    {% endif %}
-</ul>
-{% endif %}
+  </div>
+</section>

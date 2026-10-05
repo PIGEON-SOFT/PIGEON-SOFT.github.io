@@ -1,7 +1,7 @@
 {
-  "name": "Hux Blog",
-  "short_name": "Hux Blog",
-  "description": "About an engineer & designer who loves web.",
+  "name": "Pigeon's Blog",
+  "short_name": "Pigeon",
+  "description": "嵌入式系统、控制与电源的个人实验记录。",
   "icons": [{
     "src": "icons/128.png",
     "sizes": "128x128",

@@ -5,7 +5,7 @@ header-img: img/luna-bg.jpg
 email: 2068338499@qq.com
 description: "这里是 @Pigeon 的个人博客，与你一起发现更大的世界"
 keyword: "Pigeon, 博客, 个人网站, 互联网, Web, 编程"
-url: "https://theman6699.github.io" # your host, for absolute URL
+url: "https://pigeon-soft.github.io" # your host, for absolute URL
 baseurl: "" # for example, '/blog' if your blog hosted on 'host/blog'
 
 # Publish posts or collection documents with a future date.
@@ -15,7 +15,7 @@ future: true
 RSS: false
 #weibo_username: huxpro
 #zhihu_username: huxpro
-github_username: theman6699
+github_username: PIGEON-SOFT
 twitter_username: huxpro
 #facebook_username:  huxpro
 #linkedin_username:  firstname-lastname-idxxxx
