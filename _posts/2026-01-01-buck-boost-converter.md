@@ -4,7 +4,7 @@ title:      "Buck-Boost 变换器学习笔记：原理推导与 Simulink 仿真"
 subtitle:   "升降压电路的原理推导与仿真练习"
 date:       2026-01-01 12:00:00
 author:     "Pigeon"
-header-img: "img/post-bg-2015.jpg"
+header-img: "img/luna-bg1.jpg"
 tags:
     - Power Electronics
     - Simulink

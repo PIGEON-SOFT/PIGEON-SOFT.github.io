@@ -4,7 +4,7 @@ title:      "电源控制学习：PI 与 PR 控制器的理解与仿真"
 subtitle:   "尝试推导传递函数并进行简单的代码实现"
 date:       2025-12-30 12:00:00
 author:     "Pigeon"
-header-img: "img/post-bg-2015.jpg"
+header-img: "img/luna-bg1.jpg"
 tags:
     - Control Theory
     - Power Electronics

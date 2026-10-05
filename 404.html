@@ -2,7 +2,7 @@
 layout: default
 title: 404
 hide-in-nav: true
-description: "你来到了没有知识的荒原 :("
+description: "当前坐标不存在，返回主页继续探索。"
 header-img: "img/404-bg.jpg"
 permalink: /404.html
 ---
@@ -10,6 +10,8 @@ permalink: /404.html
 
 <!-- Page Header -->
 {% include intro-header.html type="page" short='true' %}
+
+<div class="container signal-return"><a href="{{ site.baseurl }}/">返回主页 ↗</a></div>
 
 <script>
 	document.body.classList.add('page-fullscreen');

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#172622">
     <title>华瑞昇智能充电桩云端实时监控</title>
     <!-- MQTT.js CDN -->
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
@@ -147,10 +148,15 @@
         }
         .btn-close:hover { background: #475569; }
     </style>
+    <link rel="stylesheet" href="/css/monitor.css">
 </head>
 <body>
 
 <div class="container">
+    <nav class="monitor-nav" aria-label="主导航">
+        <a class="monitor-brand" href="/" aria-label="Pigeon 首页"><span>P</span> PIGEON<b>.</b></a>
+        <div><a href="/">首页</a><a href="/archive/">文章归档</a><a href="/about/">关于我</a></div>
+    </nav>
     <div class="header">
         <h1>⚡ 华瑞昇智能充电桩云端监控</h1>
         <p>通过 EMQX 公共 MQTT 服务器实时接收单片机数据 · 无需后台服务</p>
@@ -174,7 +180,7 @@
 
     <!-- MCU 状态面板 -->
     <div class="status-panel">
-        <h3>🔧 单片机状态</h3>
+        <h3>单片机状态</h3>
         <div class="status-grid">
             <div class="status-item">
                 <div class="label">MQTT 连接</div>
@@ -221,7 +227,7 @@
 
     <!-- 实时折线图 -->
     <div class="chart-section">
-        <h3>📈 实时趋势图</h3>
+        <h3>实时趋势图</h3>
         <div class="chart-row">
             <div class="chart-wrap"><canvas id="chart-voltage"></canvas></div>
             <div class="chart-wrap"><canvas id="chart-current"></canvas></div>
@@ -230,7 +236,7 @@
 
     <!-- 远程控制面板 -->
     <div class="ctrl-panel">
-        <h3>🎮 远程控制 (发送到 ht32_sc8815/cmd)</h3>
+        <h3>远程控制 (发送到 ht32_sc8815/cmd)</h3>
         <div class="ctrl-grid">
             <div class="ctrl-item">
                 <label>VBus 电压</label>
@@ -254,11 +260,11 @@
             </div>
         </div>
         <div class="ctrl-btns">
-            <button class="btn-send" onclick="sendParams()">📤 发送参数</button>
-            <button class="btn-mode" onclick="sendMode(0)">🔋 充电模式</button>
-            <button class="btn-mode" onclick="sendMode(1)">⚡ 放电模式</button>
-            <button class="btn-start" onclick="sendEnable(1)">▶ 启动</button>
-            <button class="btn-stop" onclick="sendEnable(0)">⏹ 停止</button>
+            <button class="btn-send" onclick="sendParams()">发送参数</button>
+            <button class="btn-mode" onclick="sendMode(0)">充电模式</button>
+            <button class="btn-mode" onclick="sendMode(1)">放电模式</button>
+            <button class="btn-start" onclick="sendEnable(1)">启动</button>
+            <button class="btn-stop" onclick="sendEnable(0)">停止</button>
         </div>
         <div class="ctrl-feedback" id="ctrl-fb">等待操作...</div>
     </div>
@@ -266,7 +272,7 @@
     <!-- 日志 -->
     <div class="log-box">
         <div class="log-header">
-            <span>📡 实时数据流</span>
+            <span>实时数据流</span>
             <button onclick="clearLog()">清空</button>
         </div>
         <div class="log-content" id="log"></div>

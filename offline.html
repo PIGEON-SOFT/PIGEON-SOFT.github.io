@@ -2,7 +2,7 @@
 layout: default
 title: Offline
 hide-in-nav: true
-description: "阅读过的页面可以在离线时访问哦 ;)"
+description: "连接暂时中断，已缓存的页面仍可访问。"
 header-img: "img/404-bg.jpg"
 permalink: /offline.html
 ---
@@ -10,6 +10,8 @@ permalink: /offline.html
 
 <!-- Page Header -->
 {% include intro-header.html type="page" %}
+
+<div class="container signal-return"><a href="{{ site.baseurl }}/">重新打开主页 ↗</a></div>
 
 <script>
 	document.body.classList.add('page-fullscreen');

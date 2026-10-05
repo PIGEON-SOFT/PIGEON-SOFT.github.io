@@ -1,0 +1,78 @@
+:root { --inner-ink: #182522; --inner-paper: #f2f1ec; --inner-accent: #ef6845; --inner-line: #ccd6cd; }
+body.signal-inner { background: var(--inner-paper); color: var(--inner-ink); font-family: Arial, "Microsoft YaHei", sans-serif; letter-spacing: 0; }
+.signal-inner *, .signal-inner *::before, .signal-inner *::after { box-sizing: border-box; }
+.signal-inner :focus-visible { outline: 2px solid var(--inner-accent); outline-offset: 3px; }
+.signal-inner a { color: #9a452e; }
+.signal-inner .signal-nav { position: absolute; }
+.signal-inner .signal-nav a, .signal-inner .signal-footer a { color: inherit; }
+.signal-inner .signal-nav-links a:hover, .signal-inner .signal-nav-links .is-current { color: #fff; }
+.signal-inner .signal-nav .search-icon { height: 100%; padding: 0 0 2px; border: 0; border-bottom: 2px solid transparent; background: none; color: rgba(255,255,255,.77); font-size: 15px; cursor: pointer; }
+.signal-inner .signal-nav .search-icon:hover { border-color: var(--inner-accent); color: white; }
+.signal-inner .intro-header { position: relative; isolation: isolate; overflow: hidden; min-height: 380px; margin: 0 0 55px; background-color: #172320; background-position: center 39%; background-size: cover; }
+.signal-inner .intro-header::before { content: ''; position: absolute; z-index: -1; inset: 0; background: linear-gradient(90deg, rgba(9,21,19,.94), rgba(9,21,19,.71) 51%, rgba(9,21,19,.28)), linear-gradient(0deg, rgba(9,21,19,.58), transparent 60%); }
+.signal-inner .intro-header::after { content: ''; position: absolute; z-index: -1; inset: 0; opacity: .23; pointer-events: none; background-image: linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px); background-size: 80px 80px; animation: signal-grid-shift 18s linear infinite; }
+.signal-inner .intro-header .header-mask { display: none; }
+.signal-inner #particle-canvas { opacity: .35; }
+.signal-inner .intro-header .container { position: relative; z-index: 6; }
+.signal-inner .intro-header .site-heading, .signal-inner .intro-header .post-heading { padding: 147px 0 86px; text-align: left; color: #fff; animation: signal-enter .7s both; }
+.signal-inner .intro-header .site-heading::before, .signal-inner .intro-header .post-heading::before { display: block; margin-bottom: 22px; color: #9bd6ca; content: 'PIGEON / FIELD NOTES'; font: 700 11px Consolas, monospace; }
+.signal-inner .intro-header .site-heading h1 { margin: 0; font-size: clamp(40px, 5vw, 70px); font-weight: 900; line-height: 1.14; overflow-wrap: anywhere; }
+.signal-inner .intro-header .site-heading .subheading { margin-top: 17px; color: #d6e3db; font-size: 15px; line-height: 1.7; }
+.signal-inner .intro-header .post-heading h1 { margin: 20px 0 15px; font-size: clamp(30px, 3.5vw, 49px); font-weight: 800; line-height: 1.35; overflow-wrap: anywhere; }
+.signal-inner .intro-header .post-heading .subheading { margin: 0 0 20px; color: #d9e4dc; font-size: 17px; line-height: 1.65; }
+.signal-inner .intro-header .post-heading .meta { color: #c0d2c9; font: 12px Consolas, monospace; }
+.signal-inner .intro-header .tags a { display: inline-block; margin: 0 7px 7px 0; padding: 5px 9px; border: 1px solid rgba(155,214,202,.45); color: #bfeadd; font: 11px Consolas, monospace; }
+.signal-inner .intro-header .tags a:hover { background: rgba(155,214,202,.18); }
+.signal-inner main#content { min-height: 62vh; }
+.signal-inner main#content > .container, .signal-inner article > .container { padding-bottom: 68px; }
+.signal-inner .post-container, .signal-inner .postlist-container { font-size: 16px; line-height: 1.9; }
+.signal-inner .post-container h2, .signal-inner .post-container h3 { color: var(--inner-ink); font-weight: 800; }
+.signal-inner .post-container h2::before { background: var(--inner-accent); }
+.signal-inner .post-container a:hover { color: var(--inner-accent); }
+.signal-inner .post-container img, .signal-inner .post-container table { max-width: 100%; }
+.signal-inner .post-container pre { overflow-x: auto; border: 1px solid var(--inner-line); border-radius: 3px; }
+.signal-inner .post-container blockquote { border-left: 3px solid var(--inner-accent); background: #e7ebe4; padding: 12px 20px; }
+.signal-inner .post-container .pager li > a { border-radius: 2px; border: 1px solid var(--inner-line); background: transparent; color: var(--inner-ink); }
+.signal-inner .post-container .pager li > a:hover { background: #dae5dc; }
+.signal-inner .sidebar-container { border-color: var(--inner-line); }
+.signal-inner .sidebar-container .tags a:hover { background: var(--inner-accent); border-color: var(--inner-accent); }
+.signal-inner .side-catalog a:hover, .signal-inner .sidebar-container a:hover { color: #b34f34; }
+.signal-inner #tag_cloud { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 34px; }
+.signal-inner #tag_cloud a { display: inline-flex; align-items: center; gap: 5px; margin: 0; padding: 7px 12px; border: 1px solid var(--inner-line); border-radius: 2px; background: transparent; color: #344a43; font-size: 12px !important; font-weight: 700; cursor: pointer; }
+.signal-inner #tag_cloud a.focus, .signal-inner #tag_cloud a:hover, .signal-inner #tag_cloud a.tag-button--all.focus { background: #23433b !important; color: white !important; box-shadow: none; }
+.signal-inner #tag_cloud a.tag-button--all { color: #23433b !important; }
+.signal-inner .mini-post-list { margin: 0; }
+.signal-inner .mini-post-list section { padding-bottom: 23px; }
+.signal-inner .mini-post-list .listing-seperator { display: block; margin: 12px 0 6px; color: #b34f34; font: 800 14px Consolas, monospace !important; }
+.signal-inner .mini-post-list .tag-text { font: inherit; }
+.signal-inner .mini-post-list .post-preview { margin: 0; border-bottom: 1px solid var(--inner-line); }
+.signal-inner .mini-post-list .post-preview > a { display: block; padding: 16px 0; transition: padding .2s, background .2s; }
+.signal-inner .mini-post-list .post-preview > a:hover { padding-left: 12px; background: #e5ebe4; }
+.signal-inner .mini-post-list .post-preview > a .post-title { margin: 0; color: var(--inner-ink); font-size: 18px; font-weight: 800; line-height: 1.5; }
+.signal-inner .mini-post-list .post-preview > a .post-subtitle { color: #677c73; font-size: 13px; }
+.signal-inner .mini-post-list .post-preview hr { display: none; }
+.signal-inner .signal-footer { margin-top: 35px; }
+.signal-inner .search-page { z-index: 40; background: #e7eee7; }
+.signal-inner .search-page .search-main label { color: #34534a; font: 700 12px Consolas, monospace; }
+.signal-inner .search-icon-close { border: 0; background: none; }
+.signal-inner .search-page #search-input { color: var(--inner-ink); border-bottom-color: #9bac9e; }
+.signal-inner.page-fullscreen .intro-header { position: relative; height: min(75svh, 740px); min-height: 480px; }
+.signal-inner.page-fullscreen #tag-heading { position: relative; width: auto; height: auto; padding: 150px 0 70px; align-items: flex-start; }
+.signal-inner.page-fullscreen footer { position: static; opacity: 1; }
+.signal-inner .signal-return { margin-top: -17px; }
+.signal-inner .signal-return a { display: inline-block; padding: 13px 20px; background: var(--inner-accent); color: #15201e; font-size: 13px; font-weight: 800; }
+.signal-inner .signal-return a:hover { background: #ff8e66; text-decoration: none; }
+@keyframes signal-grid-shift { to { background-position: 80px 80px; } }
+@media (max-width: 650px) {
+  .signal-inner .signal-nav-links a:first-child { display: none; }
+  .signal-inner .signal-nav .search-icon { font-size: 13px; }
+  .signal-inner .intro-header { min-height: 330px; margin-bottom: 34px; }
+  .signal-inner .intro-header .site-heading, .signal-inner .intro-header .post-heading { padding: 115px 0 56px; }
+  .signal-inner .intro-header .site-heading::before, .signal-inner .intro-header .post-heading::before { font-size: 9px; margin-bottom: 16px; }
+  .signal-inner .intro-header .post-heading h1 { font-size: 29px; }
+  .signal-inner .intro-header .site-heading .subheading { font-size: 13px; }
+  .signal-inner .post-container, .signal-inner .postlist-container { font-size: 15px; }
+  .signal-inner .mini-post-list .post-preview > a .post-title { font-size: 16px; }
+  .signal-inner .signal-footer { margin-top: 15px; }
+}
+@media (prefers-reduced-motion: reduce) { .signal-inner .intro-header .site-heading, .signal-inner .intro-header .post-heading, .signal-inner .intro-header::after { animation: none; } }

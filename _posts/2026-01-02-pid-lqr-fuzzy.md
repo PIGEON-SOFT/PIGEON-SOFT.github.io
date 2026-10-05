@@ -4,7 +4,7 @@ title:      "几种常用控制算法的学习总结：PID、LQR 与 模糊PID"
 subtitle:   "对三种主流控制策略的原理梳理与简单实现"
 date:       2026-01-02 12:00:00
 author:     "Pigeon"
-header-img: "img/post-bg-2015.jpg"
+header-img: "img/luna-bg1.jpg"
 tags:
     - Control Theory
     - PID
